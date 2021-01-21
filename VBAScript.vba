@@ -1,5 +1,29 @@
 Sub RunTotals()
 
+'Unmerge all cells
+ActiveSheet.Cells.UnMerge
+
+'Check row 9 for any blank headers and remove the relative column
+Dim colCheck As Integer
+colCheck = 1
+Dim littleLoopCounter As Integer 'Keeps the removal process from infinite looping when it reaches the last column early.
+littleLoopCounter = 0
+
+While colCheck < 27
+    If IsEmpty(Cells(9, colCheck).Value) Then
+' DEBUGGING        MsgBox ("Removing Column " + CStr(colCheck) + " it contained: " + CStr(Cells(9, colCheck).Value))
+        Columns(colCheck).EntireColumn.Delete
+        If littleLoopCounter > 3 Then
+            littleLoopCounter = 0
+            colCheck = colCheck + 1
+        Else
+            littleLoopCounter = littleLoopCounter + 1
+        End If
+    Else
+        colCheck = colCheck + 1
+    End If
+Wend
+
 'Variables
 Dim dates() As Date
 Dim totals() As Double
@@ -7,32 +31,32 @@ Dim time() As Double
 Dim isNew As Boolean
 isNew = False
 Dim i As Integer
-i = 2
+i = 10
 Dim curRange As String
-curRange = "E" + CStr(i)
+curRange = "D" + CStr(i)
 Dim curDate As String
 Dim curRadRange As String
-curRadRange = "K" + CStr(i)
+curRadRange = "J" + CStr(i)
 Dim curRad As String
 Dim curTimeRange As String
-curTimeRange = "L" + CStr(i)
+curTimeRange = "K" + CStr(i)
 Dim curTime As Double
 
 
-'Sort the sheet by Date (column E)
+'Sort the sheet by Date (column D)
 Dim numDates As Long
-numDates = Cells(Rows.Count, "E").End(xlUp).Row - 1
+numDates = Cells(Rows.Count, "D").End(xlUp).Row - 1
 Dim sortRange As String
-sortRange = "A2:N" + CStr(numDates)
+sortRange = "A10:N" + CStr(numDates)
 'DEBUGGING - MsgBox ("sortRange is " + sortRange)
-Range(sortRange).Sort key1:=Range("E:E"), order1:=xlAscending, Header:=xlNo
+Range(sortRange).Sort key1:=Range("D:D"), order1:=xlAscending, Header:=xlNo
 
 ' While theres a value in the E column, walk the dates() array check for a match
 Do While Not Range(curRange).Value = ""
     isNew = True
 
     'Check for first run
-    If i = 2 Then
+    If i = 10 Then
         curDate = Range(curRange).Value
         curRad = Range(curRadRange).Value
         curTime = Range(curTimeRange).Value
@@ -43,9 +67,9 @@ Do While Not Range(curRange).Value = ""
         ReDim time(1)
         time(0) = curTime
         i = i + 1
-        curRange = "E" + CStr(i)
-        curRadRange = "K" + CStr(i)
-        curTimeRange = "L" + CStr(i)
+        curRange = "D" + CStr(i)
+        curRadRange = "J" + CStr(i)
+        curTimeRange = "K" + CStr(i)
     Else
 
         'Not first run. Grab the values of columns of interest
@@ -76,29 +100,34 @@ Do While Not Range(curRange).Value = ""
             time(UBound(time) - 1) = curTime
         End If
         i = i + 1
-        curRange = "E" + CStr(i)
-        curRadRange = "K" + CStr(i)
-        curTimeRange = "L" + CStr(i)
+        curRange = "D" + CStr(i)
+        curRadRange = "J" + CStr(i)
+        curTimeRange = "K" + CStr(i)
     End If
 Loop
 Dim msg As String
 Dim k As Integer
 
+'Clear N:R to prevent duplicating data during multiple macro runs
+Columns("N:R").EntireColumn.Delete
+
 'Make a header for the arrays
-Range("E1").Copy Range("S1")
-Range("K1").Copy Range("T1")
-Range("L1").Copy Range("U1")
+Range("D9").Copy Range("P9")
+Range("J9").Copy Range("Q9")
+Range("K9").Copy Range("R9")
 
 'Put the values in the columns
 Dim l As Integer
 l = 0
 Dim m As Integer
-m = 2
+m = 10
 While l < UBound(dates)
-    Cells(m, 19).Value = CStr(dates(l))
-    Cells(m, 20).Value = CStr(totals(l) / 1000)
-    Cells(m, 21).Value = CStr(time(l))
+    Cells(m, 16).Value = CStr(dates(l))
+    Cells(m, 17).Value = CStr(totals(l))
+    Cells(m, 18).Value = CStr(time(l))
     l = l + 1
     m = m + 1
 Wend
+Columns("A:M").AutoFit
+Columns("P:R").AutoFit
 End Sub
